@@ -1,0 +1,15 @@
+cifar
+svhn
+*.pth
+__pycache__
+*.t7
+work
+codebase
+nng/experiments
+*/__pycache__
+dbsn_seg/CamVid*
+dbsn_seg/baseline*
+dbsn_seg/dbsn*
+dbsn_seg/test*
+dbsn_seg/const*
+dbsn_seg/sgd*
