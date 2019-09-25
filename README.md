@@ -41,7 +41,7 @@ CUDA_VISIBLE_DEVICES=0 python train.py --run random_safrom_decayto0.5 --dataset 
 CUDA_VISIBLE_DEVICES=0 python train.py --run random_safrom_random --dataset cifar10 --method random --restore_arch ../work/sarandom_0/alphas20.pth
 ```
 
-train and test nek-fac:
+train and test nek-fac (based on the [original implementation](https://github.com/pomonam/NoisyNaturalGradient)):
 ```
 cd nng
 
