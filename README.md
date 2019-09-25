@@ -3,21 +3,33 @@ Code for Deep Bayesian Structure Networks
 
 train on classification tasks:
 ```
+cd dbsn
+
+run: random
 CUDA_VISIBLE_DEVICES=0 python train.py --run random_0 --dataset cifar10 --method random
 
+run: dropout
 CUDA_VISIBLE_DEVICES=0 python train.py --run ds_dp0.2_0 --dataset cifar10 --method densenet --drop_rate 0.2
 
+run: fixed alpha
 CUDA_VISIBLE_DEVICES=0 python train.py --run ds_0 --dataset cifar10 --method densenet
 
+run: drop-path
 CUDA_VISIBLE_DEVICES=0 python train.py --run ds_dpth0.3_0 --dataset cifar10 --method densenet --droppath_rate 0.3
 
+run: dbsn-1
 CUDA_VISIBLE_DEVICES=0 python train.py --run adags_lr3_decayto0.5_1gpu_0
+
+run: dbsn
 CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --run adags_lr3_decayto0.5_0
 
+run: dbsn*
 CUDA_VISIBLE_DEVICES=0 python train.py --run adags_lr3_con1_1gpu_0 (change L63 of architect.py)
 
+run: pe
 CUDA_VISIBLE_DEVICES=0 python train.py --run ps_0 --dataset cifar10 --ps
 
+run:darts
 CUDA_VISIBLE_DEVICES=0 python train.py --run darts_0 --dataset cifar10 --ps --valid
 ```
 
@@ -31,6 +43,8 @@ CUDA_VISIBLE_DEVICES=0 python train.py --run random_safrom_random --dataset cifa
 
 train and test nek-fac:
 ```
+cd nng
+
 CUDA_VISIBLE_DEVICES=0 python train.py --config config/classification/ekfac_vgg16_bn_aug_cifar10.json
 vgg11:
 80 test cifari10: test | loss: 0.552116 | accuracy: 0.900800
@@ -46,6 +60,7 @@ vgg13:
 ```
 
 segmentation results:
+`cd dbsn_seg`
 
 `CUDA_VISIBLE_DEVICES=0 python train.py --model FCDenseNet67 --dir baseline_pw0.1`
 > baseline_pw0.1 (3463243): Test - Loss: 0.3258 | Acc: 0.9040 | IOU: 0.6306 (0.92879747 0.80222609 0.29405931 0.94646308 0.82097352 0.75199645 0.40112767 0.32157756 0.7888852  0.48912112 0.39160665)
