@@ -60,6 +60,7 @@ vgg13:
 ```
 
 segmentation results:
+
 `cd dbsn_seg`
 
 `CUDA_VISIBLE_DEVICES=0 python train.py --model FCDenseNet67 --dir baseline_pw0.1`
