@@ -45,7 +45,7 @@ train and test nek-fac:
 ```
 cd nng
 
-CUDA_VISIBLE_DEVICES=0 python train.py --config config/classification/ekfac_vgg16_bn_aug_cifar10.json
+CUDA_VISIBLE_DEVICES=0 python train.py --config config/classification/ekfac_vgg16_bn_aug.json
 vgg11:
 80 test cifari10: test | loss: 0.552116 | accuracy: 0.900800
 80 test cifari100: test | loss: 2.951545 | accuracy: 0.610300
