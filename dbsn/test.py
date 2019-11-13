@@ -2,6 +2,7 @@
 
 import argparse
 import torch
+import torchbnn
 
 import torch.nn as nn
 import torch.optim as optim
@@ -13,10 +14,7 @@ from torch.autograd import Variable
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
-
 from torch.utils.data import DataLoader, Subset
-from torch.distributions.relaxed_bernoulli import RelaxedBernoulli
-from torch.distributions.bernoulli import Bernoulli
 
 import os
 import sys
@@ -28,7 +26,6 @@ import shutil
 import glob
 import logging
 
-import stochastic_nn as stochastic_nn
 from architect import _ada_gumbel_softmax
 import matplotlib.pyplot as plt
 
@@ -127,6 +124,8 @@ def main():
     parser.add_argument('--drop_rate', type=float, default=0., help='drop_rate')
     parser.add_argument('--droppath_rate', type=float, default=0., help='droppath_rate')
     parser.add_argument('--ent', action='store_true', default=False, help='only calulate entropy')
+    parser.add_argument('--test_mc_eff', action='store_true', default=False, help='the number of mc')
+    parser.add_argument('--test_bnn', action='store_true', default=False, help='if test with weight uncertainty')
     args = parser.parse_args()
 
     args.save = '../'#'../work/attack{}'.format(args.restore.split('/')[-2].replace('run', ''))
@@ -189,13 +188,54 @@ def main():
     else:
         exit(1)
 
-
-    ites = 1 if (args.method == 'densenet' or (args.method == 'dbsn' and args.ps)) and args.drop_rate == 0. and args.droppath_rate == 0. else 100
+    if args.test_bnn:
+        ites = 100
+    else:
+        ites = 1 if (args.method == 'densenet' or (args.method == 'dbsn' and args.ps)) and args.drop_rate == 0. and args.droppath_rate == 0. else 100
     print('<<<<' + str(ites) + '>>>>')
     if args.ent:
         test(args, ites, net, svhn_testloader, alphas_prior_logits, alphas, betas, normMean, normStd, True)
     else:
-        test(args, ites, net, testLoader, alphas_prior_logits, alphas, betas, normMean, normStd, False)
+        if args.test_mc_eff:
+            errs, eces, test_losses = [], [], []
+            ites_list = [1,2,3,4,5,6,7,8,9,10,15,20,30,40,50,60,70,80,90,100]
+            for ites in ites_list:
+                r1, r2, r3 = test(args, ites, net, testLoader, alphas_prior_logits, alphas, betas, normMean, normStd, False)
+                print(r1, r2, r3)
+                errs.append(r1)
+                eces.append(r2.item())
+                test_losses.append(r3)
+            print(errs, eces, test_losses)
+
+            fig = plt.figure()
+            # plt.subplot(1,2,1)
+            plt.plot(ites_list, errs, color='c', lw=2)
+            plt.xlabel('Number of MC samples', fontsize=14)
+            plt.ylabel('Error rate (%)', color='k', fontsize=14)
+            plt.tick_params('y', colors='k')
+            # plt.grid(True)
+            plt.savefig(args.save + "/mc_times_errs_" + args.dataset + ".pdf")
+
+            fig = plt.figure()
+            # plt.subplot(1,2,2)
+            plt.plot(ites_list, eces, color='y', lw=2)
+            plt.xlabel('Number of MC samples', fontsize=14)
+            plt.ylabel('ECE', color='k', fontsize=14)
+            plt.tick_params('y', colors='k')
+            # plt.grid(True)
+            plt.savefig(args.save + "/mc_times_eces_" + args.dataset + ".pdf")
+
+            fig = plt.figure()
+            # plt.subplot(1,2,1)
+            plt.plot(ites_list, test_losses, color='g', lw=2)
+            plt.xlabel('Number of MC samples', fontsize=14)
+            plt.ylabel('Test loss', color='k', fontsize=14)
+            plt.tick_params('y', colors='k')
+            # plt.grid(True)
+            plt.savefig(args.save + "/mc_times_tls_" + args.dataset + ".pdf")
+
+        else:
+            test(args, ites, net, testLoader, alphas_prior_logits, alphas, betas, normMean, normStd, False)
 
 
 def test(args, ites, net, testLoader, alphas_prior_logits, alphas, betas, normMean, normStd, ent):
@@ -246,6 +286,8 @@ def test(args, ites, net, testLoader, alphas_prior_logits, alphas, betas, normMe
         test_loss, incorrect, nTotal, err, ece.item()))
     entropies = torch.cat(entropies, 0).data.cpu().numpy()
     np.save(args.save + "/entropies.npy", entropies)
+
+    return err, ece, test_loss
 
 if __name__=='__main__':
     main()

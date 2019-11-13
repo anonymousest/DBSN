@@ -110,6 +110,7 @@ class PSOptimizer(object):
       self.args = args
       self.counter = 0
       self.num_batch = num_batch
+      self.tau = None
 
 
     def step(self, batch_idx, input_train, target_train, input_search, target_search, network_optimizer, epoch):
